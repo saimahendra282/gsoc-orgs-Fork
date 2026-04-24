@@ -156,9 +156,47 @@ async function getOrganizations(params: {
     if (params.topicsLogic) queryParams.set("topicsLogic", params.topicsLogic);
 
     const query = queryParams.toString();
-    return apiFetchServer<PaginatedResponse<Organization>>(
-      `/api/organizations${query ? `?${query}` : ""}`
-    );
+    try {
+      return await apiFetchServer<PaginatedResponse<Organization>>(
+        `/api/organizations${query ? `?${query}` : ""}`
+      );
+    } catch (error) {
+      // API failed, fall back to static JSON with OR logic
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[ORGS] API fetch failed, falling back to static JSON');
+      }
+      const indexData = await loadOrganizationsIndexData();
+      if (!indexData) {
+        throw error; // Can't fallback, re-throw original error
+      }
+      
+      // Filter with OR logic only (static JSON doesn't support AND)
+      let filtered = indexData.organizations;
+      const hasFilters = params.q || params.years || params.categories || params.techs || params.topics || params.firstTimeOnly;
+      if (hasFilters) {
+        filtered = filterOrganizations(indexData.organizations, {
+          query: params.q,
+          years: params.years ? params.years.split(',').map(y => parseInt(y)).filter(n => !isNaN(n)) : undefined,
+          categories: params.categories ? params.categories.split(',') : undefined,
+          techs: params.techs ? params.techs.split(',') : undefined,
+          topics: params.topics ? params.topics.split(',') : undefined,
+          firstTimeOnly: params.firstTimeOnly === 'true',
+        });
+      }
+      
+      const page = params.page || 1;
+      const limit = params.limit || 20;
+      const total = filtered.length;
+      const start = (page - 1) * limit;
+      const end = start + limit;
+      return {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        items: filtered.slice(start, end) as Organization[],
+      };
+    }
   }
 
   // Use static JSON for simple filters or no filters

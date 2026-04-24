@@ -155,6 +155,17 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
     })
   }
 
+  const setLogic = (category: 'years' | 'categories' | 'techs' | 'topics', mode: 'AND' | 'OR') => {
+    // Categories field is single-value, so AND logic is not supported by the API
+    if (category === 'categories' && mode === 'AND') {
+      return
+    }
+    onFilterChange({
+      ...filters,
+      [`${category}Logic`]: mode,
+    })
+  }
+
   const getLogicMode = (category: 'years' | 'categories' | 'techs' | 'topics'): 'AND' | 'OR' => {
     return filters[`${category}Logic`] || 'OR'
   }
@@ -187,7 +198,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
   const visibleTechs = showAllTechs ? filteredTechs : filteredTechs.slice(0, 10)
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 pb-6 shadow-md max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar">
+    <div className="rounded-xl border border-border bg-card p-4 pb-6 shadow-md lg:max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-base font-semibold text-gray-900 dark:text-foreground">Filters</h3>
@@ -214,7 +225,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
       </div> */}
 
       {/* Shortcuts Section */}
-      <div className="mb-4">
+      <div className="mb-6">
 
         <div className="pl-1 py-2">
 
@@ -232,7 +243,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
       </div>      
 
       {/* Years Section */}
-      <div className="mb-4 border-t border-border pt-3">
+      <div className="mb-6 border-t border-border pt-5">
         <div className="flex items-center justify-between w-full py-2">
           <button
             onClick={() => toggleSection('years')}
@@ -294,7 +305,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
             </div>
             <div className="flex items-center gap-1 border border-border rounded">
               <button
-                onClick={() => toggleLogic('years')}
+                onClick={() => setLogic('years', 'AND')}
                 className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${getLogicMode('years') === 'AND'
                   ? 'bg-teal-600 text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -303,7 +314,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
                 AND
               </button>
               <button
-                onClick={() => toggleLogic('years')}
+                onClick={() => setLogic('years', 'OR')}
                 className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${getLogicMode('years') === 'OR'
                   ? 'bg-teal-600 text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -352,7 +363,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
       </div>
 
       {/* Technologies Section */}
-      <div className="border-t border-border pt-3">
+      <div className="mb-6 border-t border-border pt-5">
         <div className="flex items-center justify-between w-full py-2">
           <button
             onClick={() => toggleSection('technologies')}
@@ -414,7 +425,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
             </div>
             <div className="flex items-center gap-1 border border-border rounded">
               <button
-                onClick={() => toggleLogic('techs')}
+                onClick={() => setLogic('techs', 'AND')}
                 className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${getLogicMode('techs') === 'AND'
                   ? 'bg-teal-600 text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -423,7 +434,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
                 AND
               </button>
               <button
-                onClick={() => toggleLogic('techs')}
+                onClick={() => setLogic('techs', 'OR')}
                 className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${getLogicMode('techs') === 'OR'
                   ? 'bg-teal-600 text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -485,7 +496,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
       </div>
 
       {/* Categories Section */}
-      <div className="mb-4 border-t border-border pt-3">
+      <div className="mb-6 border-t border-border pt-5">
         <div className="flex items-center justify-between w-full py-2">
           <button
             onClick={() => toggleSection('categories')}
@@ -547,16 +558,18 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
             </div>
             <div className="flex items-center gap-1 border border-border rounded">
               <button
-                onClick={() => toggleLogic('categories')}
-                className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${getLogicMode('categories') === 'AND'
+                disabled
+                onClick={() => setLogic('categories', 'AND')}
+                className={`px-2 py-0.5 text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed ${getLogicMode('categories') === 'AND'
                   ? 'bg-teal-600 text-white shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground'
                   }`}
+                title="AND logic not supported for categories (single-value field)"
               >
                 AND
               </button>
               <button
-                onClick={() => toggleLogic('categories')}
+                onClick={() => setLogic('categories', 'OR')}
                 className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${getLogicMode('categories') === 'OR'
                   ? 'bg-teal-600 text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -587,7 +600,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
       </div>
 
       {/* Topics Section */}
-      <div className="mb-4 border-t border-border pt-3">
+      <div className="mb-6 border-t border-border pt-5">
         <div className="flex items-center justify-between w-full py-2">
           <button
             onClick={() => toggleSection('topics')}
@@ -649,7 +662,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
             </div>
             <div className="flex items-center gap-1 border border-border rounded">
               <button
-                onClick={() => toggleLogic('topics')}
+                onClick={() => setLogic('topics', 'AND')}
                 className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${getLogicMode('topics') === 'AND'
                   ? 'bg-teal-600 text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -658,7 +671,7 @@ export function FiltersSidebar({ onFilterChange, filters, availableTechs, firstT
                 AND
               </button>
               <button
-                onClick={() => toggleLogic('topics')}
+                onClick={() => setLogic('topics', 'OR')}
                 className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${getLogicMode('topics') === 'OR'
                   ? 'bg-teal-600 text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
